@@ -10,6 +10,10 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (!prisma) {
+      return NextResponse.json({ success: true, data: [] });
+    }
+
     const userId = (session.user as any).id;
     const platforms = await prisma.platform.findMany({
       where: { userId },
@@ -28,6 +32,10 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!prisma) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
     const body = await request.json();
@@ -63,6 +71,10 @@ export async function DELETE(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!prisma) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
     const { searchParams } = new URL(request.url);

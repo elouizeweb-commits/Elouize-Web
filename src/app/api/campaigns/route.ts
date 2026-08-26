@@ -22,6 +22,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (!prisma) {
+      return NextResponse.json({ success: true, data: [] });
+    }
+
     const userId = (session.user as any).id;
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
@@ -49,6 +53,10 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!prisma) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
     const body = await request.json();

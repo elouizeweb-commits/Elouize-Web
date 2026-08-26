@@ -21,6 +21,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!prisma) {
+      return NextResponse.json(
+        { error: "Registration not available - database not configured" },
+        { status: 503 }
+      );
+    }
+
     const { name, email, password } = parsed.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
