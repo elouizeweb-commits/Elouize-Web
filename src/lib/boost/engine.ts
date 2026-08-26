@@ -264,17 +264,26 @@ export class BoostEngine {
     }
   }
 
-  async retryFailed(taskId: string): Promise<{ success: boolean; message: string }> {
+  async retryFailed(campaignId: string): Promise<{ success: boolean; message: string }> {
     try {
-      await prisma.boostTask.update({
-        where: { id: taskId },
+      const failedTasks = await prisma.boostTask.findMany({
+        where: { campaignId, status: "FAILED" },
+      });
+
+      if (failedTasks.length === 0) {
+        return { success: false, message: "No failed tasks to retry for this campaign" };
+      }
+
+      await prisma.boostTask.updateMany({
+        where: { campaignId, status: "FAILED" },
         data: {
           status: "PENDING",
           errorMessage: null,
           failedAt: null,
         },
       });
-      return { success: true, message: "Task queued for retry" };
+
+      return { success: true, message: `${failedTasks.length} task(s) queued for retry` };
     } catch (error) {
       return { success: false, message: `Retry failed: ${(error as Error).message}` };
     }

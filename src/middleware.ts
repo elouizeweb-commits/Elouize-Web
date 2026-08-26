@@ -8,35 +8,35 @@ export async function middleware(request: NextRequest) {
   const isApiRoute = request.nextUrl.pathname.startsWith("/api");
 
   if (!process.env.NEXTAUTH_SECRET) {
-    const response = NextResponse.next();
-    response.headers.set("x-request-id", crypto.randomUUID());
-    return response;
+    return NextResponse.next();
   }
 
-  const { getToken } = await import("next-auth/jwt");
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  try {
+    const { getToken } = await import("next-auth/jwt");
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
 
-  if (isAuthPage && token) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (!isApiRoute && request.nextUrl.pathname.startsWith("/dashboard") && !token) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  if (isApiRoute && !isAuthPage && request.nextUrl.pathname !== "/api/auth/register") {
-    const isAuthApi = request.nextUrl.pathname.startsWith("/api/auth");
-    if (!isAuthApi && !token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (isAuthPage && token) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
+
+    if (!isApiRoute && request.nextUrl.pathname.startsWith("/dashboard") && !token) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    if (isApiRoute && !isAuthPage && request.nextUrl.pathname !== "/api/auth/register") {
+      const isAuthApi = request.nextUrl.pathname.startsWith("/api/auth");
+      if (!isAuthApi && !token) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+  } catch (e) {
+    return NextResponse.next();
   }
 
-  const response = NextResponse.next();
-  response.headers.set("x-request-id", crypto.randomUUID());
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
