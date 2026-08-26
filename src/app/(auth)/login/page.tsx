@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Input from "@/components/ui/Input";
@@ -22,17 +21,31 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
+      const csrfRes = await fetch("/api/auth/csrf");
+      const { csrfToken } = await csrfRes.json();
+
+      const res = await fetch("/api/auth/callback/credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          email,
+          password,
+          csrfToken,
+          redirect: "false",
+          json: "true",
+        }),
       });
 
-      if (result?.error) {
-        setError("Invalid email or password");
-      } else {
+      const data = await res.json();
+
+      if (data.url) {
+        router.push(data.url);
+        router.refresh();
+      } else if (!data.error) {
         router.push("/dashboard");
         router.refresh();
+      } else {
+        setError("Invalid email or password");
       }
     } catch {
       setError("An error occurred. Please try again.");
@@ -43,7 +56,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-dark-900 flex">
-      {/* Left - Form */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-md">
           <div className="flex items-center gap-2 mb-8">
@@ -137,7 +149,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right - Decorative */}
       <div className="hidden lg:flex flex-1 items-center justify-center relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10" />
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] animate-float" />
