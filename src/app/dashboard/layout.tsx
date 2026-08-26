@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, createContext, useContext } from "react";
-import { SessionProvider } from "next-auth/react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -20,7 +19,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <SessionProvider>
       <LayoutContext.Provider value={{ sidebarOpen, setSidebarOpen }}>
         <div className="flex min-h-screen bg-dark-900">
           <Sidebar />
@@ -37,6 +35,5 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </LayoutContext.Provider>
-    </SessionProvider>
   );
 }
