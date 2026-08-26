@@ -21,7 +21,7 @@ import {
 
 interface ChartDataPoint {
   name: string;
-  value: number;
+  value?: number;
   [key: string]: any;
 }
 

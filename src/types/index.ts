@@ -39,7 +39,7 @@ export interface Campaign {
   name: string;
   platform: PlatformType;
   videoUrl: string | null;
-  contentTitle: string | null;
+  contentTitle?: string | null;
   targetViews: number;
   targetLikes: number;
   targetComments: number;
